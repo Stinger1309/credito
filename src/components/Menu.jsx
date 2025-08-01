@@ -238,7 +238,11 @@ const Menu = ({ onClose }) => {
               >
                 <i className="bx bx-credit-card text-2xl mr-3"></i>
                 <span className="text-md font-semibold">
+<<<<<<< HEAD
                   Modulo Asignación de Contrato
+=======
+                  Modulo gestion de contrato
+>>>>>>> 26255468f7dcd8d721106b43296d3c19c5e58628
                 </span>
               </NavLink>
             </div>
@@ -272,11 +276,16 @@ const Menu = ({ onClose }) => {
               >
                 <i className="bx bx-credit-card text-2xl mr-3"></i>
                 <span className="text-md font-semibold">
+<<<<<<< HEAD
                   Modulo de Gestión de Créditos
+=======
+                  Módulo de supervisión de cuotas
+>>>>>>> 26255468f7dcd8d721106b43296d3c19c5e58628
                 </span>
               </NavLink>
             </div>
 
+<<<<<<< HEAD
             <div ref={setLinkRef("/amortizacion")}>
               <NavLink
                 to="/amortizacion"
@@ -365,6 +374,79 @@ const Menu = ({ onClose }) => {
           </nav>
         </div>
 
+=======
+            {/* Configuración */}
+            <div>
+              <button
+                onClick={toggleGestionEmprend}
+                className="w-full flex items-center px-1 py-3 rounded-lg hover:bg-gray-100 transition cursor-pointer focus:outline-none"
+              >
+                <i className="bx bx-cog text-2xl mr-3"></i>
+                <span className="flex-1 text-md font-semibold text-left">
+                  Configuración
+                </span>
+                <i
+                  className={`bx transition-transform duration-300 ${
+                    isGestionEmprendOpen
+                      ? "bx-chevron-up text-blue-500"
+                      : "bx-chevron-down"
+                  }`}
+                ></i>
+              </button>
+              {isGestionEmprendOpen && (
+                <div className="ml-6 mt-2 space-y-2 transition-all duration-300 max-h-60 overflow-hidden">
+                  <div ref={setLinkRef("/Usuario")}>
+                    <NavLink
+                      to="/Usuario"
+                      className={({ isActive }) =>
+                        `block px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                          isActive
+                            ? "bg-gray-200 font-semibold"
+                            : "hover:bg-gray-100"
+                        }`
+                      }
+                      onClick={onClose}
+                    >
+                      Gestión de Usuarios
+                    </NavLink>
+                  </div>
+                  <div ref={setLinkRef("/Emprendimiento")}>
+                    <NavLink
+                      to="/Emprendimiento"
+                      className={({ isActive }) =>
+                        `block px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                          isActive
+                            ? "bg-gray-200 font-semibold"
+                            : "hover:bg-gray-100"
+                        }`
+                      }
+                      onClick={onClose}
+                    >
+                      Registro de Clasificación Emprendimiento
+                    </NavLink>
+                  </div>
+                  <div ref={setLinkRef("/Requerimientos")}>
+                    <NavLink
+                      to="/Requerimientos"
+                      className={({ isActive }) =>
+                        `block px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer ${
+                          isActive
+                            ? "bg-gray-200 font-semibold"
+                            : "hover:bg-gray-100"
+                        }`
+                      }
+                      onClick={onClose}
+                    >
+                      Requerimientos
+                    </NavLink>
+                  </div>
+                </div>
+              )}
+            </div>
+          </nav>
+        </div>
+
+>>>>>>> 26255468f7dcd8d721106b43296d3c19c5e58628
         {/* Pie de página */}
         <div className="mt-8 text-center text-sm text-gray-500 italic">
           © {new Date().getFullYear()} TuInstitución. Todos los derechos

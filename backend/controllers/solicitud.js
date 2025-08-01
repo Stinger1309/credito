@@ -47,4 +47,31 @@ router.post("/", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
+=======
+// Endpoint para actualizar una solicitud por cédula del emprendedor
+router.put("/:cedula_emprendedor", async (req, res) => {
+  try {
+    const { cedula_emprendedor } = req.params;
+    const { estatus } = req.body; // Solo necesitas estatus
+
+    // Actualiza solo el campo estatus
+    const resultado = await query(
+      `UPDATE solicitud SET estatus = $1 WHERE cedula_emprendedor = $2 RETURNING *;`,
+      [estatus, cedula_emprendedor]
+    );
+
+    if (resultado.rows.length > 0) {
+      res.json(resultado.rows[0]);
+    } else {
+      res.status(404).json({ message: "Solicitud no encontrada para esa cédula" });
+    }
+  } catch (error) {
+    console.error("Error al actualizar la solicitud:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+>>>>>>> 26255468f7dcd8d721106b43296d3c19c5e58628
 module.exports = router;

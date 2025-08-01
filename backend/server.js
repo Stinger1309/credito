@@ -19,7 +19,10 @@ app.use(express.json());
 
 // Rutas consolidadas
 app.use('/api/persona', personaAPI);
+<<<<<<< HEAD
 app.use('/api/personas', personaAPI);
+=======
+>>>>>>> 26255468f7dcd8d721106b43296d3c19c5e58628
 app.use('/api/usuarios', usuarioAPI);
 app.use('/api/fondos', fondoAPI);
 app.use('/api/requerimientos', clasificacion_requerimientoAPI); // Aquí agregamos la API de requerimientos

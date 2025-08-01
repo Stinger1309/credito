@@ -113,7 +113,12 @@ INSERT INTO requerimientos (nombre_requerimiento) VALUES
 
 
 -- Insertar en persona
+INSERT INTO persona (cedula, nombre_completo, edad, telefono, email, estado, municipio, direccion_actual, tipo_persona)
+VALUES ('30608696', 'Yeisnardo Eliander Bravo Colina', 30, '555-1234', 'admin@example.com', 'Activo', 'Ciudad', 'Dirección 123', 'Administrador');
 
+-- Insertar en usuario
+INSERT INTO usuario (cedula_usuario, usuario, clave, rol, estatus)
+VALUES ('30608696', 'Administrador', 'admin123', 'Administrador', 'Activo');
 
 INSERT INTO clasificacion (sector, negocio) VALUES
 -- Sector Primario

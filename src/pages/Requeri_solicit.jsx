@@ -257,6 +257,7 @@ const RequireSolicit = ({ setUser }) => {
                 }
               >
                 {step === 1 ? (
+<<<<<<< HEAD
   <>
     <div>
       <label htmlFor="requerimientos" className="block mb-2 text-gray-700 font-medium">
@@ -303,6 +304,74 @@ const RequireSolicit = ({ setUser }) => {
     </div>
   </>
                   
+=======
+                  <>
+                    <div>
+                      <label
+                        htmlFor="requerimientos"
+                        className="block mb-2 text-gray-700 font-medium"
+                      >
+                        Por favor, indique los requisitos que posee.
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto rounded-xl p-4">
+                        {requerimientos.map((req) => (
+                          <div
+                            key={req.id_requerimientos}
+                            className="flex items-center mb-2"
+                          >
+                            <input
+                              type="checkbox"
+                              id={`requerimiento-${req.id_requerimientos}`}
+                              name="opt_requerimiento"
+                              value={req.id_requerimientos}
+                              checked={formData.opt_requerimiento.includes(
+                                req.id_requerimientos
+                              )}
+                              onChange={handleInputChange}
+                              className="h-6 w-6 border-2 border-gray-300 rounded-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+                            />
+                            <label
+                              htmlFor={`requerimiento-${req.id_requerimientos}`}
+                              className="ml-3 text-gray-700 font-medium"
+                            >
+                              {req.nombre_requerimiento}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      {errors.opt_requerimiento && (
+                        <div className="flex items-center bg-red-50 border border-red-200 rounded-lg p-2 mt-1 transition-transform transform hover:scale-105">
+                          {/* Icono advertencia */}
+                          <svg
+                            className="w-5 h-5 text-red-400 mr-2 flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 9v2m0 4h.01M12 3a9 9 0 00-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9a9 9 0 00-9-9z"
+                            />
+                          </svg>
+                          <p className="text-red-600 text-sm font-medium">
+                            {errors.opt_requerimiento}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex justify-end mt-4">
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition duration-300"
+                      >
+                        Siguiente
+                      </button>
+                    </div>
+                  </>
+>>>>>>> 26255468f7dcd8d721106b43296d3c19c5e58628
                 ) : (
                   // Paso 2: Motivo
                   <>
@@ -527,4 +596,8 @@ const RequireSolicit = ({ setUser }) => {
   );
 };
 
+<<<<<<< HEAD
 export default RequireSolicit;
+=======
+export default RequireSolicit;
+>>>>>>> 26255468f7dcd8d721106b43296d3c19c5e58628

@@ -112,6 +112,8 @@ INSERT INTO requerimientos (nombre_requerimiento) VALUES
 ('Referencia bancaria');
 
 
+
+jolaaaaaaa jajajajaja
 -- Insertar en persona
 
 

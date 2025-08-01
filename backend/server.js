@@ -1,39 +1,50 @@
-// Importar módulos necesarios
 const express = require('express');
 const cors = require('cors');
 
-// Importar las rutas específicas para cada entidad, excepto 'emprendedores'
-const usuarioRoutes = require('./routes/routes_usuario');
-const emprendimientoRoutes = require('./routes/routes_emprendimiento');
-const ubicacionRoutes = require('./routes/routes_ubicacion');
-const consejoRoutes = require('./routes/routes_consejoComunal');
-const personaRoutes = require('./routes/routes_persona'); // Ruta de persona
+// Importamos todos los archivos consolidados
+const personaAPI = require('./controllers/persona');
+const usuarioAPI = require('./controllers/usuario');
+const fondoAPI = require('./controllers/fondo');
+const clasificacion_requerimientoAPI = require('./controllers/clasificacion_requerimiento'); // Asegúrate de que la ruta sea correcta
+const emprendimientoAPI = require('./controllers/empredimiento'); // Importa el controlador de emprendimientos
+const solicitudAPI = require('./controllers/solicitud'); // Importa el controlador de solicitudes
+const requerimientoEmprendedorAPI = require('./controllers/requerimiento'); // Importa el controlador de requerimientos de emprendedores
+const clasificacionEmprendimientoEmprendedorAPI = require('./controllers/clasificacion_emprendimiento'); // Importa el controlador de requerimientos de clasificacion de empredimietos
 
-// Crear la aplicación Express
 const app = express();
 
-// Configurar CORS para permitir solicitudes desde el cliente
+// Middlewares básicos
 app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(express.json());
 
-// Configurar el parsing de JSON y urlencoded con límite de tamaño
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Rutas consolidadas
+app.use('/api/persona', personaAPI);
+app.use('/api/personas', personaAPI);
+app.use('/api/usuarios', usuarioAPI);
+app.use('/api/fondos', fondoAPI);
+app.use('/api/requerimientos', clasificacion_requerimientoAPI); // Aquí agregamos la API de requerimientos
+app.use('/api/emprendimientos', emprendimientoAPI); // Aquí agregamos la API de emprendimientos
+app.use('/api/solicitudes', solicitudAPI); // Aquí agregamos la API de solicitudes
+app.use('/api/requerimiento_emprendedor', requerimientoEmprendedorAPI); // Aquí agregamos la API de requerimientos de emprendedores
+app.use('/api/clasificacion', clasificacionEmprendimientoEmprendedorAPI); // Aquí agregamos la API de requerimientos de emprendedores
 
-// Definir las rutas de cada entidad
-app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/emprendimientos', emprendimientoRoutes);
-app.use('/api/ubicaciones', ubicacionRoutes);
-app.use('/api/consejo_comunal', consejoRoutes);
-app.use('/api/persona', personaRoutes); // Ruta para "persona"
-
-// Middleware para manejo de errores
+// Middleware de errores
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error(err.stack);
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
-// Definir puerto y arrancar el servidor
+// Iniciar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Servidor en puerto ${PORT}`);
+  console.log(`🚀 Servidor ejecutándose en http://localhost:${PORT}`);
+  console.log('🔍 Endpoints disponibles:');
+  console.log('   /api/personas');
+  console.log('   /api/usuarios');
+  console.log('   /api/fondos');
+  console.log('   /api/requerimientos'); // Endpoint de requerimientos
+  console.log('   /api/emprendimientos'); // Endpoint de emprendimientos
+  console.log('   /api/solicitudes'); // Endpoint de solicitudes
+  console.log('   /api/requerimiento_emprendedor'); // Endpoint de requerimientos de emprendedores
+  console.log('   /api/clasificacion'); // Endpoint de requerimientos de emprendedores
 });

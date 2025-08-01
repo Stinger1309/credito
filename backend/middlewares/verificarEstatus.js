@@ -1,5 +1,5 @@
 // middlewares/verificarEstatus.js
-const { query } = require('../config/db');
+const { query } = require('../config/conexion');
 
 const verificarEstatusUsuario = async (req, res, next) => {
   try {
@@ -9,7 +9,7 @@ const verificarEstatusUsuario = async (req, res, next) => {
       return res.status(401).json({ error: 'Usuario no proporcionado' });
     }
 
-    const result = await query('SELECT * FROM usuario WHERE usuario = $1', [usuario]);
+    const result = await query('SELECT * FROM usuario WHERE cedula_usuario = $1', [usuario]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }

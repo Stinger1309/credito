@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2"; // Importa SweetAlert2
 import "../assets/css/style.css";
 import Header from "../components/Header";
 import Menu from "../components/Menu";
-import api from "../services/api_usuario"; // Tu API
 
 const Cuotas = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(true);
   const [user, setUser] = useState(null);
 
-  // Datos de cuotas
+  // Estado de cuotas con campo 'cayo'
   const [cuotas, setCuotas] = useState([
-    { id: 1, monto: 100, descripcion: "Cuota 1", pagada: false },
-    { id: 2, monto: 200, descripcion: "Cuota 2", pagada: false },
+    { id: 1, monto: 100, descripcion: "Cuota 1", pagada: false, cayo: false },
+    { id: 2, monto: 200, descripcion: "Cuota 2", pagada: false, cayo: false },
   ]);
 
-  // Datos de semanas y oportunidades
+  // Estado de semanas
   const [semanas, setSemanas] = useState([
     { semana: 1, oportunidad: 1, pagada: false, cuotaId: 1 },
     { semana: 2, oportunidad: 1, pagada: false, cuotaId: 2 },
@@ -24,14 +24,12 @@ const Cuotas = () => {
     { semana: 4, oportunidad: 2, pagada: false, cuotaId: null },
   ]);
 
-  // Estado para formulario
-  const [nuevoMonto, setNuevoMonto] = useState('');
-  const [nuevaDescripcion, setNuevaDescripcion] = useState('');
+  // Estado para gestionar pago
+  const [cuotaSeleccionada, setCuotaSeleccionada] = useState(null);
+  const [referencia, setReferencia] = useState("");
+  const [fechaPago, setFechaPago] = useState("");
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
+  // Cargar datos del usuario (simulación)
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -46,162 +44,249 @@ const Cuotas = () => {
     fetchUserData();
   }, []);
 
-  const agregarCuota = () => {
-    if (nuevoMonto && nuevaDescripcion) {
-      const nuevaCuota = {
-        id: cuotas.length + 1,
-        monto: parseFloat(nuevoMonto),
-        descripcion: nuevaDescripcion,
-        pagada: false,
-      };
-      setCuotas([...cuotas, nuevaCuota]);
-      setNuevoMonto('');
-      setNuevaDescripcion('');
-    } else {
-      alert("Por favor ingresa monto y descripción");
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  // Función para abrir el proceso de pago (se dispara desde botón)
+  const abrirModalPagarCuota = (cuota) => {
+    setCuotaSeleccionada(cuota);
+    setReferencia("");
+    setFechaPago("");
+    // Aquí en lugar de abrir modal, llamamos Swal
+    Swal.fire({
+      title: 'Pagar Cuota',
+      html: `
+        <p>Cuota: <strong>${cuota.descripcion}</strong></p>
+        <p>Monto: <strong>$${cuota.monto}</strong></p>
+        <div style="margin-top:10px;">
+          <label style="display:block; margin-bottom:5px;">Referencia</label>
+          <input id="ref-input" class="swal2-input" placeholder="Referencia" />
+        </div>
+        <div style="margin-top:10px;">
+          <label style="display:block; margin-bottom:5px;">Fecha de Pago</label>
+          <input id="date-input" type="date" class="swal2-input"/>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Pagar',
+      cancelButtonText: 'Cancelar',
+      focusConfirm: false,
+      preConfirm: () => {
+        const ref = Swal.getPopup().querySelector('#ref-input').value;
+        const date = Swal.getPopup().querySelector('#date-input').value;
+        if (!ref || !date) {
+          Swal.showValidationMessage('Por favor ingresa referencia y fecha de pago');
+        }
+        return { referencia: ref, fechaPago: date };
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Procesar pago
+        setReferencia(result.value.referencia);
+        setFechaPago(result.value.fechaPago);
+        procesarPago();
+      }
+    });
+  };
+
+  const procesarPago = () => {
+    if (referencia && fechaPago && cuotaSeleccionada) {
+      Swal.fire({
+        title: '¿Confirma la acción?',
+        text: `¿Desea marcar la cuota "${cuotaSeleccionada.descripcion}" como pagada?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#166534',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, pagar',
+        cancelButtonText: 'Cancelar',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Actualizar cuotas
+          setCuotas((prev) =>
+            prev.map((c) =>
+              c.id === cuotaSeleccionada.id ? { ...c, pagada: true } : c
+            )
+          );
+          // Actualizar semanas relacionadas
+          setSemanas((prev) =>
+            prev.map((s) =>
+              s.cuotaId === cuotaSeleccionada.id ? { ...s, pagada: true } : s
+            )
+          );
+          Swal.fire({
+            icon: 'success',
+            title: '¡Pagado!',
+            text: 'La cuota ha sido marcada como pagada.',
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        }
+      });
     }
   };
 
-  // Función para amortizar semana
-  const amortizarSemana = (semana, oportunidad) => {
-    setSemanas(prev =>
-      prev.map(s =>
-        s.semana === semana && s.oportunidad === oportunidad
-          ? { ...s, pagada: true }
-          : s
-      )
+  // Confirmar "Cayo"
+  const confirmarCayo = (id) => {
+    setCuotas((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, cayo: true } : c))
     );
   };
 
-  // Función para pagar cuota
-  const pagarCuota = (cuotaId) => {
-    setCuotas(prev =>
-      prev.map(c => (c.id === cuotaId ? { ...c, pagada: true } : c))
-    );
-  };
-
-  // Unir en una sola estructura para mostrar en una tabla
-  const filas = semanas.map((s) => {
-    const cuota = cuotas.find(c => c.id === s.cuotaId);
-    return {
-      semana: s.semana,
-      oportunidad: s.oportunidad,
-      semanaPagada: s.pagada,
-      cuota: cuota,
-      cuotaPagada: cuota ? cuota.pagada : null,
-      semanaPagada: s.pagada,
-    };
-  });
-
-  const semanasNoPagadas = semanas.filter(s => !s.pagada);
+  const semanasNoPagadas = semanas.filter((s) => !s.pagada);
+  const saldoRestante = cuotas
+    .filter((c) => !c.pagada)
+    .reduce((acc, c) => acc + c.monto, 0);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-[#F9FAFB] font-serif overflow-hidden">
       {menuOpen && <Menu />}
-      <div className="flex-1 flex flex-col ml-0 md:ml-64">
-        <Header user={user} toggleMenu={toggleMenu} menuOpen={menuOpen} />
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ${
+          menuOpen ? "ml-64" : "ml-0"
+        }`}
+      >
+        <Header toggleMenu={toggleMenu} />
 
         {/* Contenido principal */}
-        <div className="pt-20 px-8">
+        <div className="p-8 pt-24 w-full mx-auto">
           {/* Encabezado */}
-          <header className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-2">
-              <div className="bg-blue-500 p-3 rounded-full shadow-lg text-white">
-                <i className="bx bx-home text-2xl"></i>
+          <div className="flex items-center justify-between mb-8 ">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white p-3 rounded-full shadow-md hover:scale-105 transform transition duration-300 ease-in-out cursor-pointer">
+                <i className="bx bx-folder-open text-3xl text-gray-700"></i>
               </div>
-              <h1 className="text-3xl font-bold text-gray-800">Inicio</h1>
+              <h1 className="text-3xl font-semibold text-gray-800">Reporte de Cuota</h1>
             </div>
-          </header>
+          </div>
 
-          {/* Tabla combinada */}
-          <h2 className="text-2xl font-semibold mb-4">Gestión Integral: Semanas, Oportunidades y Cuotas</h2>
-          <div className="overflow-x-auto mb-8">
-            <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 border-b">Semana</th>
-                  <th className="px-4 py-2 border-b">Oportunidad</th>
-                  <th className="px-4 py-2 border-b">Semana Pagada</th>
-                  <th className="px-4 py-2 border-b">Cuota</th>
-                  <th className="px-4 py-2 border-b">Cuota Pagada</th>
-                  <th className="px-4 py-2 border-b">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {semanas.map((s, index) => {
-                  const cuota = cuotas.find(c => c.id === s.cuotaId);
-                  return (
-                    <tr key={index} className="hover:bg-gray-100">
-                      <td className="px-4 py-2 border-b">{s.semana}</td>
-                      <td className="px-4 py-2 border-b">{s.oportunidad}</td>
-                      <td className="px-4 py-2 border-b">
-                        {s.pagada ? (
-                          <span className="text-green-600 font-semibold">Sí</span>
-                        ) : (
-                          <span className="text-red-600 font-semibold">No</span>
-                        )}
+          {/* Tarjeta de cuotas */}
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-4 border-b pb-2 border-gray-300 text-[#374151]">
+              Listado de Cuotas
+            </h2>
+            {/* Tabla */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 rounded-lg shadow-md">
+                <thead className="bg-[#F9FAFB] rounded-t-lg">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-[#374151] uppercase tracking-wider border-b border-gray-200 rounded-tl-lg">
+                      ID
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-[#374151] uppercase tracking-wider border-b border-gray-200">
+                      Monto
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-[#374151] uppercase tracking-wider border-b border-gray-200">
+                      Descripción
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-[#374151] uppercase tracking-wider border-b border-gray-200">
+                      Pagada
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-[#374151] uppercase tracking-wider border-b border-gray-200 rounded-tr-lg">
+                      Confirmación
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {cuotas.map((c) => (
+                    <tr
+                      key={c.id}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-4 py-3 border-b border-gray-200">{c.id}</td>
+                      <td className="px-4 py-3 border-b border-gray-200">
+                        ${c.monto}
                       </td>
-                      <td className="px-4 py-2 border-b">
-                        {cuota ? cuota.descripcion : "N/A"}
+                      <td className="px-4 py-3 border-b border-gray-200">
+                        {c.descripcion}
                       </td>
-                      <td className="px-4 py-2 border-b">
-                        {cuota ? (
-                          cuota.pagada ? (
-                            <span className="text-green-600 font-semibold">Sí</span>
-                          ) : (
-                            <span className="text-red-600 font-semibold">No</span>
-                          )
-                        ) : (
-                          "N/A"
-                        )}
-                      </td>
-                      <td className="px-4 py-2 border-b">
-                        {!s.pagada && (
+                      {/* Estado Pagada */}
+                      <td className="px-4 py-3 border-b border-gray-200">
+                        {!c.pagada ? (
                           <button
-                            className="bg-indigo-500 text-white px-3 py-1 rounded mb-1"
-                            onClick={() => amortizarSemana(s.semana, s.oportunidad)}
+                            className="bg-[#111827] hover:bg-[#111827]/90 text-white px-3 py-1 rounded-full shadow-md text-sm transition-transform hover:scale-105"
+                            onClick={() => abrirModalPagarCuota(c)}
                           >
-                            Marcar como pagada
+                            Pagar
                           </button>
+                        ) : (
+                          <span className="px-3 py-1 text-sm font-semibold text-green-800 bg-green-100 border border-green-200 rounded-full shadow-sm transition hover:bg-green-200 cursor-default">
+                            Pagada
+                          </span>
                         )}
-                        {cuota && !cuota.pagada && (
-                          <button
-                            className="bg-yellow-500 text-white px-3 py-1 rounded"
-                            onClick={() => pagarCuota(cuota.id)}
+                      </td>
+                      {/* Estado "Cayó" */}
+                      <td className="px-4 py-3 border-b border-gray-200 text-center cursor-pointer">
+                        {c.cayo ? (
+                          <span className="px-3 py-1 text-sm font-semibold text-green-800 bg-green-100 border border-green-200 rounded-full shadow-sm transition cursor-default">
+                            Confirmado
+                          </span>
+                        ) : (
+                          <span
+                            className="px-3 py-1 text-sm font-semibold text-red-800 bg-red-100 border border-red-200 rounded-full shadow-sm transition cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              confirmarCayo(c.id);
+                            }}
                           >
-                            Pagar Cuota
-                          </button>
-                        )}
-                        {s.pagada && <div className="text-green-600 font-semibold">Semana pagada</div>}
-                        {cuota && cuota.pagada && (
-                          <div className="text-green-600 font-semibold">Cuota pagada</div>
+                            En espera
+                          </span>
                         )}
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          {/* Resumen de semanas no pagadas */}
-          <div className="p-4 bg-gray-50 rounded-lg border mb-8">
-            <h3 className="text-xl font-semibold mb-2">Semanas no pagadas</h3>
-            {semanasNoPagadas.length === 0 ? (
-              <p>¡Todas las semanas están amortizadas!</p>
-            ) : (
-              <ul className="list-disc list-inside">
-                {semanasNoPagadas.map((s, index) => (
-                  <li key={index}>Semana {s.semana} - Oportunidad {s.oportunidad}</li>
+          {/* Secciones adicionales */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            {/* Semanas no pagadas */}
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+              <h3 className="text-xl font-semibold mb-4 text-[#374151]">
+                Semanas no pagadas
+              </h3>
+              {semanasNoPagadas.length === 0 ? (
+                <p className="text-green-600 font-semibold">
+                  ¡Todas las semanas están pagadas!
+                </p>
+              ) : (
+                <ul className="list-disc list-inside text-[#374151]">
+                  {semanasNoPagadas.map((s, index) => (
+                    <li key={index}>
+                      Semana {s.semana} - Oportunidad {s.oportunidad}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Resumen y saldo */}
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+              <h3 className="text-xl font-semibold mb-4 text-[#374151]">
+                Resumen de Cuotas
+              </h3>
+              <ul className="mb-4">
+                {cuotas.map((c) => (
+                  <li key={c.id} className="mb-2">
+                    <span className="font-semibold">{c.descripcion}:</span>{" "}
+                    Monto ${c.monto} - Estado: {c.pagada ? "Pagada" : "Pendiente"}
+                  </li>
                 ))}
               </ul>
-            )}
+              <p className="text-lg font-semibold text-[#1F2937]">
+                Saldo restante:{" "}
+                <span className="text-red-600">${saldoRestante}</span>
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Pie */}
-        <footer className="mt-auto p-4 text-center text-gray-500 bg-gray-100 border-t border-gray-300">
-          © {new Date().getFullYear()} TuEmpresa. Todos los derechos reservados.
+        {/* Pie de página */}
+        <footer className="mt-auto p-4 bg-[#F9FAFB] border-t border-gray-300 text-center text-[#4B5563] text-sm">
+          © {new Date().getFullYear()} IFEMI & UPTYAB. Todos los derechos reservados.
         </footer>
       </div>
     </div>
